@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet.photon.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet.photon.js"></script>
+        <script src="data/ZONAS_1.js"></script>
+        <script src="data/ACOPIOSACTUAL_2.js"></script>
+        <script src="data/PROPUESTAACOPIOS_3.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: '#ffff00',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ffff00',
+                fillOpacity: 1
+              });
+            }
+        }
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[4.615854020291876,-74.21668639915833],[4.728518674946868,-73.99028664182313]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_MAPABASE_0');
+        map.getPane('pane_MAPABASE_0').style.zIndex = 400;
+        var layer_MAPABASE_0 = L.tileLayer('https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+            pane: 'pane_MAPABASE_0',
+            opacity: 1.0,
+            attribution: '<a href="https://cartodb.com/basemaps/">Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL.</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_MAPABASE_0;
+        map.addLayer(layer_MAPABASE_0);
+        function pop_ZONAS_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_ZONAS_1_0() {
+            return {
+                pane: 'pane_ZONAS_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(251,187,187,0.4)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_ZONAS_1');
+        map.getPane('pane_ZONAS_1').style.zIndex = 401;
+        map.getPane('pane_ZONAS_1').style['mix-blend-mode'] = 'normal';
+        var layer_ZONAS_1 = new L.geoJson(json_ZONAS_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_ZONAS_1',
+            layerName: 'layer_ZONAS_1',
+            pane: 'pane_ZONAS_1',
+            onEachFeature: pop_ZONAS_1,
+            style: style_ZONAS_1_0,
+        });
+        bounds_group.addLayer(layer_ZONAS_1);
+        map.addLayer(layer_ZONAS_1);
+        function pop_ACOPIOSACTUAL_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">ACOPIO PROPUESTA</th>\
+                        <td>' + (feature.properties['ACOPIO PROPUESTA'] !== null ? autolinker.link(String(feature.properties['ACOPIO PROPUESTA']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ACOPIO ACTUAL</th>\
+                        <td>' + (feature.properties['ACOPIO ACTUAL'] !== null ? autolinker.link(String(feature.properties['ACOPIO ACTUAL']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NOMBRE RUTA</th>\
+                        <td>' + (feature.properties['NOMBRE RUTA'] !== null ? autolinker.link(String(feature.properties['NOMBRE RUTA']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NOMBRE RECOGEDOR</th>\
+                        <td>' + (feature.properties['NOMBRE RECOGEDOR'] !== null ? autolinker.link(String(feature.properties['NOMBRE RECOGEDOR']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">CANAL (OF/VD)</th>\
+                        <td>' + (feature.properties['CANAL (OF/VD)'] !== null ? autolinker.link(String(feature.properties['CANAL (OF/VD)']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ZONA</th>\
+                        <td>' + (feature.properties['ZONA'] !== null ? autolinker.link(String(feature.properties['ZONA']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">CODIGO (PDV/VENDEDOR)</th>\
+                        <td>' + (feature.properties['CODIGO (PDV/VENDEDOR)'] !== null ? autolinker.link(String(feature.properties['CODIGO (PDV/VENDEDOR)']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">DIRECCION</th>\
+                        <td>' + (feature.properties['DIRECCION'] !== null ? autolinker.link(String(feature.properties['DIRECCION']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NOMBRE PDV/VENDEDOR</th>\
+                        <td>' + (feature.properties['NOMBRE PDV/VENDEDOR'] !== null ? autolinker.link(String(feature.properties['NOMBRE PDV/VENDEDOR']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_ACOPIOSACTUAL_2_0(feature) {
+            switch(String(feature.properties['ACOPIO ACTUAL'])) {
+                case ' VISI�N COLOMBIA':
+                    return {
+                pane: 'pane_ACOPIOSACTUAL_2',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(150,106,239,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'PATIO BONITO ':
+                    return {
+                pane: 'pane_ACOPIOSACTUAL_2',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(228,173,22,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'SPT FONTIB�N':
+                    return {
+                pane: 'pane_ACOPIOSACTUAL_2',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(143,227,137,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'TABORA':
+                    return {
+                pane: 'pane_ACOPIOSACTUAL_2',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(98,207,224,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_ACOPIOSACTUAL_2');
+        map.getPane('pane_ACOPIOSACTUAL_2').style.zIndex = 402;
+        map.getPane('pane_ACOPIOSACTUAL_2').style['mix-blend-mode'] = 'normal';
+        var layer_ACOPIOSACTUAL_2 = new L.geoJson(json_ACOPIOSACTUAL_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_ACOPIOSACTUAL_2',
+            layerName: 'layer_ACOPIOSACTUAL_2',
+            pane: 'pane_ACOPIOSACTUAL_2',
+            onEachFeature: pop_ACOPIOSACTUAL_2,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_ACOPIOSACTUAL_2_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_ACOPIOSACTUAL_2);
+        map.addLayer(layer_ACOPIOSACTUAL_2);
+        function pop_PROPUESTAACOPIOS_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">ACOPIO PROPUESTA</th>\
+                        <td>' + (feature.properties['ACOPIO PROPUESTA'] !== null ? autolinker.link(String(feature.properties['ACOPIO PROPUESTA']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ACOPIO ACTUAL</th>\
+                        <td>' + (feature.properties['ACOPIO ACTUAL'] !== null ? autolinker.link(String(feature.properties['ACOPIO ACTUAL']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NOMBRE RUTA</th>\
+                        <td>' + (feature.properties['NOMBRE RUTA'] !== null ? autolinker.link(String(feature.properties['NOMBRE RUTA']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NOMBRE RECOGEDOR</th>\
+                        <td>' + (feature.properties['NOMBRE RECOGEDOR'] !== null ? autolinker.link(String(feature.properties['NOMBRE RECOGEDOR']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">CANAL (OF/VD)</th>\
+                        <td>' + (feature.properties['CANAL (OF/VD)'] !== null ? autolinker.link(String(feature.properties['CANAL (OF/VD)']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ZONA</th>\
+                        <td>' + (feature.properties['ZONA'] !== null ? autolinker.link(String(feature.properties['ZONA']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">CODIGO (PDV/VENDEDOR)</th>\
+                        <td>' + (feature.properties['CODIGO (PDV/VENDEDOR)'] !== null ? autolinker.link(String(feature.properties['CODIGO (PDV/VENDEDOR)']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">DIRECCION</th>\
+                        <td>' + (feature.properties['DIRECCION'] !== null ? autolinker.link(String(feature.properties['DIRECCION']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NOMBRE PDV/VENDEDOR</th>\
+                        <td>' + (feature.properties['NOMBRE PDV/VENDEDOR'] !== null ? autolinker.link(String(feature.properties['NOMBRE PDV/VENDEDOR']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_PROPUESTAACOPIOS_3_0(feature) {
+            switch(String(feature.properties['ACOPIO PROPUESTA'])) {
+                case ' VISI�N COLOMBIA':
+                    return {
+                pane: 'pane_PROPUESTAACOPIOS_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(200,74,231,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '5TO ACOPIO':
+                    return {
+                pane: 'pane_PROPUESTAACOPIOS_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(100,226,72,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'PATIO BONITO ':
+                    return {
+                pane: 'pane_PROPUESTAACOPIOS_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(203,63,91,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'SPT FONTIB�N':
+                    return {
+                pane: 'pane_PROPUESTAACOPIOS_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(13,50,218,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'TABORA':
+                    return {
+                pane: 'pane_PROPUESTAACOPIOS_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(47,201,173,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_PROPUESTAACOPIOS_3');
+        map.getPane('pane_PROPUESTAACOPIOS_3').style.zIndex = 403;
+        map.getPane('pane_PROPUESTAACOPIOS_3').style['mix-blend-mode'] = 'normal';
+        var layer_PROPUESTAACOPIOS_3 = new L.geoJson(json_PROPUESTAACOPIOS_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_PROPUESTAACOPIOS_3',
+            layerName: 'layer_PROPUESTAACOPIOS_3',
+            pane: 'pane_PROPUESTAACOPIOS_3',
+            onEachFeature: pop_PROPUESTAACOPIOS_3,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_PROPUESTAACOPIOS_3_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_PROPUESTAACOPIOS_3);
+        map.addLayer(layer_PROPUESTAACOPIOS_3);
+        var overlaysTree = [
+            {label: 'PROPUESTA ACOPIOS<br /><table><tr><td style="text-align: center;"><img src="legend/PROPUESTAACOPIOS_3_VISINCOLOMBIA0.png" /></td><td> VISI�N COLOMBIA</td></tr><tr><td style="text-align: center;"><img src="legend/PROPUESTAACOPIOS_3_5TOACOPIO1.png" /></td><td>5TO ACOPIO</td></tr><tr><td style="text-align: center;"><img src="legend/PROPUESTAACOPIOS_3_PATIOBONITO2.png" /></td><td>PATIO BONITO </td></tr><tr><td style="text-align: center;"><img src="legend/PROPUESTAACOPIOS_3_SPTFONTIBN3.png" /></td><td>SPT FONTIB�N</td></tr><tr><td style="text-align: center;"><img src="legend/PROPUESTAACOPIOS_3_TABORA4.png" /></td><td>TABORA</td></tr></table>', layer: layer_PROPUESTAACOPIOS_3},
+            {label: 'ACOPIOS ACTUAL<br /><table><tr><td style="text-align: center;"><img src="legend/ACOPIOSACTUAL_2_VISINCOLOMBIA0.png" /></td><td> VISI�N COLOMBIA</td></tr><tr><td style="text-align: center;"><img src="legend/ACOPIOSACTUAL_2_PATIOBONITO1.png" /></td><td>PATIO BONITO </td></tr><tr><td style="text-align: center;"><img src="legend/ACOPIOSACTUAL_2_SPTFONTIBN2.png" /></td><td>SPT FONTIB�N</td></tr><tr><td style="text-align: center;"><img src="legend/ACOPIOSACTUAL_2_TABORA3.png" /></td><td>TABORA</td></tr></table>', layer: layer_ACOPIOSACTUAL_2},
+            {label: '<img src="legend/ZONAS_1.png" /> ZONAS', layer: layer_ZONAS_1},
+            {label: "MAPA BASE", layer: layer_MAPABASE_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: false, 
+        });
+        lay.addTo(map);
+		document.addEventListener("DOMContentLoaded", function() {
+            // set new Layers List height which considers toggle icon
+            function newLayersListHeight() {
+                var layerScrollbarElement = document.querySelector('.leaflet-control-layers-scrollbar');
+                if (layerScrollbarElement) {
+                    var layersListElement = document.querySelector('.leaflet-control-layers-list');
+                    var originalHeight = layersListElement.style.height 
+                        || window.getComputedStyle(layersListElement).height;
+                    var newHeight = parseFloat(originalHeight) - 50;
+                    layersListElement.style.height = newHeight + 'px';
+                }
+            }
+            var isLayersListExpanded = true;
+            var controlLayersElement = document.querySelector('.leaflet-control-layers');
+            var toggleLayerControl = document.querySelector('.leaflet-control-layers-toggle');
+            // toggle Collapsed/Expanded and apply new Layers List height
+            toggleLayerControl.addEventListener('click', function() {
+                if (isLayersListExpanded) {
+                    controlLayersElement.classList.remove('leaflet-control-layers-expanded');
+                } else {
+                    controlLayersElement.classList.add('leaflet-control-layers-expanded');
+                }
+                isLayersListExpanded = !isLayersListExpanded;
+                newLayersListHeight()
+            });	
+			// apply new Layers List height if toggle layerstree
+			if (controlLayersElement) {
+				controlLayersElement.addEventListener('click', function(event) {
+					var toggleLayerHeaderPointer = event.target.closest('.leaflet-layerstree-header-pointer span');
+					if (toggleLayerHeaderPointer) {
+						newLayersListHeight();
+					}
+				});
+			}
+            // Collapsed/Expanded at Start to apply new height
+            setTimeout(function() {
+                toggleLayerControl.click();
+            }, 10);
+            setTimeout(function() {
+                toggleLayerControl.click();
+            }, 10);
+            // Collapsed touch/small screen
+            var isSmallScreen = window.innerWidth < 650;
+            if (isSmallScreen) {
+                setTimeout(function() {
+                    controlLayersElement.classList.remove('leaflet-control-layers-expanded');
+                    isLayersListExpanded = !isLayersListExpanded;
+                }, 500);
+            }  
+        });       
+        setBounds();
+        resetLabels([layer_ACOPIOSACTUAL_2,layer_PROPUESTAACOPIOS_3]);
+        map.on("zoomend", function(){
+            resetLabels([layer_ACOPIOSACTUAL_2,layer_PROPUESTAACOPIOS_3]);
+        });
+        map.on("layeradd", function(){
+            resetLabels([layer_ACOPIOSACTUAL_2,layer_PROPUESTAACOPIOS_3]);
+        });
+        map.on("layerremove", function(){
+            resetLabels([layer_ACOPIOSACTUAL_2,layer_PROPUESTAACOPIOS_3]);
+        });
+        </script>
+    </body>
+</html>
